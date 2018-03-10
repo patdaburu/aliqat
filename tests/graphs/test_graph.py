@@ -9,7 +9,9 @@ from aliqat.graphs import CharClass, Graph
 
 
 class TestSuite(unittest.TestCase):
-
+    """
+    Tests of the :py:class:`Graph` class.
+    """
     @parameterized.expand([
         ('a', 'a', 'a'),
         ('b', 'b', 'b'),
@@ -79,17 +81,18 @@ class TestSuite(unittest.TestCase):
     ])
     def test_graph_conflateTwice_correct(self, a, b, c, s):
         """
-        Arrange: Create graphs from first two parameters (a and b).
+        Arrange: Create graphs from first three parameters (a, b, and c).
         Act: Conflate the graphs.
-        Assert: The conflated graph matches the third parameter.
+        Assert: The conflated graph matches the last parameter.
 
         :param a: the first graph input
         :param b: the second graph input
+        :param c: the third parameter
         :param s: the expected result of conflation
         """
         for _a, _b, _c in [
             (a, b, c), (c, a, b), (b, a, c)
-        ]:  # Invert a an b for each test run.
+        ]:  # Rotate for each test run.
             g1 = Graph(_a)
             g2 = Graph(_b)
             g3 = Graph(_c)
@@ -98,6 +101,38 @@ class TestSuite(unittest.TestCase):
             self.assertEqual(
                 s, str(g1),
                 "a={}; b={}; c={}".format(repr(_a), repr(_b), repr(_c)))
+
+    @parameterized.expand([
+        ('a', 'a', 'a', 'a', 'a'),
+        ('a', '1', '!', ' ', CharClass.ANY.char),
+        ('a', '1', '!', None, CharClass.ANY.char)
+    ])
+    def test_graph_conflateThrice_correct(self, a, b, c, d, s):
+        """
+        Arrange: Create graphs from first two parameters (a, b, c, and d).
+        Act: Conflate the graphs.
+        Assert: The conflated graph matches the last parameter.
+
+        :param a: the first graph input
+        :param b: the second graph input
+        :param c: the third parameter
+        :param d: the fourth parameter
+        :param s: the expected result of conflation
+        """
+        for _a, _b, _c, _d in [
+            (a, b, c, d), (d, a, b, c), (c, d, a, b), (b, c, d, a)
+        ]:  # Rotate for each test run.
+            g1 = Graph(_a)
+            g2 = Graph(_b)
+            g3 = Graph(_c)
+            g4 = Graph(_d)
+            g1.conflate(g2)
+            g1.conflate(g3)
+            g1.conflate(g4)
+            self.assertEqual(
+                s, str(g1),
+                "a={}; b={}; c={}; d={}".format(
+                    repr(_a), repr(_b), repr(_c), repr(_d)))
 
 
 if __name__ == '__main__':
