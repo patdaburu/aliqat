@@ -33,12 +33,12 @@ class CharClass(IntFlag):
             raise RuntimeError('No character is defined.')
 
     @staticmethod
-    def from_int(cc: int):
+    def from_int(i: int):
         """
         Get the single-character string representation for an enumerated
         value.
 
-        :param cc: the enumerated value
+        :param i: the integer value
         :return: the single-character string representation
         :raises KeyError: if no single-character string representation is
         defined
@@ -59,7 +59,7 @@ class CharClass(IntFlag):
             CharClass.ANY ^ CharClass.ALPHA: '◒',
             CharClass.ANY ^ CharClass.DIGIT: '◔',
             CharClass.ANY ^ CharClass.SPECIAL: '◎'
-        }[cc]
+        }[i]
 
 class Graph(object):
 
@@ -116,7 +116,7 @@ class Graph(object):
             return CharClass.DIGIT
         elif c.isalpha():
             return CharClass.ALPHA
-        elif c in ['+', '-', ',', ':', '*', '!']:  # TODO: Move character lists!
+        elif c in ['+', '-', ',', ':', '*', '!', '?', '<', '>', '.']:  # TODO: Move character lists!
             return CharClass.SPECIAL
         else:
             return CharClass.ANY
