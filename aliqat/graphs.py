@@ -10,6 +10,7 @@ Say something descriptive about the 'grids' module.
 """
 
 from enum import IntFlag
+import os
 
 
 class CharClass(IntFlag):
@@ -129,12 +130,16 @@ class Graph(object):
             return i
 
     def __str__(self):
-        x = [self._str(i) for i in self._graph]
         return ''.join([self._str(i) for i in self._graph])
 
+    @staticmethod
+    def from_file(path: os.PathLike) -> 'Graph':
+        """
+        Load a :py:class:`Graph` from a file.
 
-
-
-
-def graph(s: str) -> Graph:
-    pass
+        :param path: the file path
+        :return: the loaded graph
+        """
+        with open(path) as f:
+            s = f.read()
+            return Graph(s)
