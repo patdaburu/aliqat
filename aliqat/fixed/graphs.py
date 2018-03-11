@@ -12,7 +12,7 @@ Say something descriptive about the 'grids' module.
 from enum import IntFlag
 from functools import reduce
 import os
-from .distances import *
+from aliqat.fixed.distances import *
 from typing import Dict, List, Tuple
 
 
@@ -81,15 +81,28 @@ class _LengthMismatch(object):
 
 class Graph(object):
 
-    def __init__(self, s: str, classification: str=None):  # TODO: Optional parameter to set minimum size.
-        self._graph = list(s) if s is not None else [' ']
+    _FUZZY_MATCH_OFFSET = bin(CharClass.ANY).count('1') + 1
+
+    def __init__(self, s: str):  # TODO: Optional parameter to set minimum size.
+        # If the caller actually passed us a list...
+        if isinstance(s, list):
+            # ...we'll just copy it.
+            self._graph = s[:]
+        else:
+            self._graph = list(s) if s is not None else []
 
     def __iter__(self):
         return iter(self._graph)
 
     def conflate(self, other: 'Graph'):
-        i = 0
-        for c in other:
+        other_graph = [item for item in other]
+        if len(other_graph) > len(self._graph):
+            self._graph.extend([' '] * (len(other_graph) - len(self._graph)))
+        elif len(self._graph) > len(other_graph):  # If this graph is longer...
+            # ...extend the other graph with whitespace.
+            other_graph.extend([' '] * (len(self._graph) - len(other_graph)))
+        for i in range(0, len(other_graph)):
+            c = other_graph[i]
             # Conflate the current value at the specified index in this graph
             # with the value from the other graph.
             try:
@@ -132,9 +145,15 @@ class Graph(object):
                 # Otherwise, we'll encode both values.
                 slf_enc = self._encode(self_graph[i])
                 oth_enc = self._encode(oth)
-                # The comparison will be a bitwise AND.
+                # The comparison will be a bitwise AND between the two
+                # encodings.
                 cmp = slf_enc & oth_enc
-                scores[i] = (bin(cmp).count('1')) * FUZZY_MATCH_MULTIPLIER
+                # The distance between these two characters is the number of
+                # 'on' bits in CharClass.ANY plus one, minus the number of 'on'
+                # bits in cmp, multiplied by the fuzzy match multiplier.
+                dist = ((self._FUZZY_MATCH_OFFSET - (bin(cmp).count('1')))
+                        * FUZZY_MATCH_MULTIPLIER)
+                scores[i] = dist  # Add this distance to the collection.
         # Sum the scores...
         _sum = reduce((lambda x, y: x + y), scores)
         # ...and return 'em.
@@ -232,5 +251,7 @@ class Classifier(object):
         # the tuple).
         distances.sort(key=lambda t: t[1])
         # Return the first classification.
-        return distances[0][0]
+        classification = distances[0][0]
+        graph = self._conflated[classification]
+        return classification, graph
 

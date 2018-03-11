@@ -5,7 +5,7 @@
 
 from parameterized import parameterized
 import unittest
-from aliqat.graphs import CharClass
+from aliqat.fixed.graphs import CharClass
 
 
 class TestSuite(unittest.TestCase):

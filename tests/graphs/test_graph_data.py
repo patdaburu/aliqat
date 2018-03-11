@@ -3,7 +3,7 @@
 
 # Created by pat on 3/10/18
 
-from aliqat.graphs import Graph, Classifier
+from aliqat.fixed.graphs import Graph, Classifier
 import unittest
 from os import listdir
 from os.path import abspath, dirname, join
@@ -48,11 +48,15 @@ class TestSuite(unittest.TestCase):
                 classifer.train(classification=dtrain, graph=graph)
 
         for dtest in sorted(listdir(test_dir)):
-            dpath = join(train_dir, dtest)
+            dpath = join(test_dir, dtest)
             for f in listdir(dpath):
                 fpath = join(dpath, f)
                 graph = Graph.from_file(fpath)
-                self.assertEqual(dtest, classifer.classify(graph))
+                classified, _graph = classifer.classify(graph)
+                self.assertEqual(
+                    dtest,
+                    classified,
+                    '\nclass={};\n{}\n{}\n'.format(dtest, str(graph), str(_graph)))
 
 
 

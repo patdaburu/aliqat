@@ -3,8 +3,8 @@
 
 # Created by pat on 3/11/18
 
-from aliqat.graphs import Graph, CharClass
-from aliqat.distances import *
+from aliqat.fixed.graphs import Graph, CharClass
+from aliqat.fixed.distances import *
 from parameterized import parameterized
 import unittest
 
@@ -25,7 +25,8 @@ class TestSuite(unittest.TestCase):
         ('1', '1', 0),
         ('1', 'a', LITERAL_MISMATCH),
         ('1', 'a ', LITERAL_MISMATCH + LENGTH_MISMATCH_MULTIPLIER),
-        ('*', '*', 0)
+        ('*', '*', 0),
+        ([CharClass.ANY], 'a', 4)
     ])
     def test_graph_compare_score(self, g1, g2, score):
         _g1 = Graph(g1)
