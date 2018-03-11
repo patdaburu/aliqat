@@ -3,7 +3,7 @@
 
 # Created by pat on 3/10/18
 
-from aliqat.graphs import Graph
+from aliqat.graphs import Graph, Classifier
 import unittest
 from os import listdir
 from os.path import abspath, dirname, join
@@ -20,6 +20,8 @@ class TestSuite(unittest.TestCase):
         print(train_dir)
         print(test_dir)
 
+
+
         # Load the training graphs.
         graphs: Dict[str, Graph] = {}
 
@@ -35,6 +37,23 @@ class TestSuite(unittest.TestCase):
 
         for k,g in graphs.items():
             print('{}\n{}\n{}\n'.format(k, '=' * 20, str(g)))
+
+        ### HERE WE GO...
+        classifer = Classifier()
+        for dtrain in sorted(listdir(train_dir)):
+            dpath = join(train_dir, dtrain)
+            for f in listdir(dpath):
+                fpath = join(dpath, f)
+                graph = Graph.from_file(fpath)
+                classifer.train(classification=dtrain, graph=graph)
+
+        for dtest in sorted(listdir(test_dir)):
+            dpath = join(train_dir, dtest)
+            for f in listdir(dpath):
+                fpath = join(dpath, f)
+                graph = Graph.from_file(fpath)
+                self.assertEqual(dtest, classifer.classify(graph))
+
 
 
 
