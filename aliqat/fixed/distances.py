@@ -10,5 +10,6 @@ Fixed scoring values.
 """
 
 LITERAL_MISMATCH = 5  #: mismatch of a literal characters
-FUZZY_MATCH_MULTIPLIER = 1  #: match against fuzzy pattern
+#FUZZY_MATCH_MULTIPLIER = 1  #: match against fuzzy pattern
+FUZZY_MATCH_PENALTY = 1
 LENGTH_MISMATCH_MULTIPLIER = 2
