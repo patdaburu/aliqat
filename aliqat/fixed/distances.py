@@ -10,6 +10,7 @@ Fixed scoring values.
 """
 
 LITERAL_MISMATCH = 5  #: mismatch of a literal characters
-#FUZZY_MATCH_MULTIPLIER = 1  #: match against fuzzy pattern
-FUZZY_MATCH_PENALTY = 1
-LENGTH_MISMATCH_MULTIPLIER = 2
+FUZZY_MATCH = 1  #: a non-literal ('fuzzy') string match
+LENGTH_MISMATCH = 2  #: a length mismatch between graphs
+FUZZY_SWING_MISS = 0.25  #:  a single bit miss in a fuzzy match
+FUZZY_STRIKEOUT = FUZZY_MATCH * 3

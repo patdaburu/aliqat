@@ -3,7 +3,7 @@
 
 # Created by pat on 3/8/18
 """
-.. currentmodule:: grids
+.. currentmodule:: graphs
 .. moduleauthor:: Pat Daburu <pat@daburu.net>
 
 Say something descriptive about the 'grids' module.
@@ -140,31 +140,40 @@ class Graph(object):
                     # Otherwise we count the distance of a literal mismatch.
                     scores[i] = LITERAL_MISMATCH
             elif slf == _LengthMismatch or oth == _LengthMismatch:
-                scores[i] = LENGTH_MISMATCH_MULTIPLIER
+                # If we find a length-mismatch at this position, that carries
+                # a distance of its own.
+                scores[i] = LENGTH_MISMATCH
             else:
-                # Otherwise, we'll encode both values.
-                slf_enc = self._encode(self_graph[i])
-                oth_enc = self._encode(oth)
-
-                slf_enc_fixed = 16 | slf_enc
-                oth_enc_fixed = 16 | oth_enc
-                result_fixed = slf_enc_fixed & oth_enc_fixed
+                # Otherwise, we'll encode both values. (We OR the higher-order
+                # bit to make sure the representations of the binary numbers
+                # are always the same width.  This means we end up with an
+                # extra 'on' bit on the left.  Notice that we have to subtract 1
+                # when we're counting bits in a few spots below to account for
+                # that.)
+                slf_enc = self._BIN_FIXER | self._encode(self_graph[i])
+                oth_enc = self._BIN_FIXER | self._encode(oth)
+                # AND the encodings together.
+                result_fixed = slf_enc & oth_enc
+                # A 'strikeout' is the case in which *none* of the bits matched.
                 strikeout = (bin(result_fixed).count('1') - 1 == 0)
+                # If none of the bits matched...
                 if strikeout:
-                    dist = FUZZY_MATCH_PENALTY * 2
+                    # ...that's the maximum distance.
+                    dist = FUZZY_STRIKEOUT
                 else:
-                    swings = bin(slf_enc_fixed).count('1') - 1
+                    # Let's figure out how many 'swings' we took (i.e. how many
+                    # 'on' bits there are in this graph's encoding).
+                    swings = bin(slf_enc).count('1') - 1
+                    # Now, how many of those 'swings' connected (ie. how many
+                    # 'on' bits in this graph's encoding matched 'on' bits in
+                    # the other graph's encoding)?
                     hits = bin(result_fixed).count('1') - 1
-                    dist = FUZZY_MATCH_PENALTY + ((swings - hits) * 0.25)
-
-
-                stophere = True
-
-
-
-
-
-                scores[i] = dist  # Add this distance to the collection.
+                    # The distance is now calculated as a function of the
+                    # number of swings (which add distance) to the number of
+                    # hits (which subtract distance).
+                    dist = FUZZY_MATCH + ((swings - hits) * FUZZY_SWING_MISS)
+                # We can now add this distance to the collection.
+                scores[i] = dist
         # Sum the scores...
         _sum = reduce((lambda x, y: x + y), scores)
         # ...and return 'em.
