@@ -3,8 +3,8 @@
 
 # Created by pat on 3/11/18
 
-from aliqat.fixed.graphs import Graph, CharClass
-from aliqat.fixed.distances import *
+from aliqat.fixed.graphs import Graph
+from aliqat.fixed.dsl import *
 from parameterized import parameterized
 import unittest
 
@@ -12,34 +12,39 @@ import unittest
 class TestSuite(unittest.TestCase):
 
     @parameterized.expand([
-        # ('a', 'a', 0),
-        # ('a', 'b', LITERAL_MISMATCH),
-        # ('aa', 'ab', LITERAL_MISMATCH),
-        # ('aa', 'bb', LITERAL_MISMATCH * 2),
-        # (' ', ' ', 0),
-        # (' ', 'a', LITERAL_MISMATCH),
-        # ('  ', ' a', LITERAL_MISMATCH),
-        # ('  ', 'aa', LITERAL_MISMATCH * 2),
-        # ('  ', '', LITERAL_MISMATCH * 2),
-        # ('', '  ', LENGTH_MISMATCH_MULTIPLIER * 2),
-        # ('1', '1', 0),
-        # ('1', 'a', LITERAL_MISMATCH),
-        # ('1', 'a ', LITERAL_MISMATCH + LENGTH_MISMATCH_MULTIPLIER),
-        # ('*', '*', 0),
-        # ('*', '1', LITERAL_MISMATCH),
-
-        # ([CharClass.ALPHA], 'a', 1),
-        # ([CharClass.ALPHA | CharClass.DIGIT], 'a', 2),
-        # ([CharClass.ALPHA | CharClass.DIGIT | CharClass.SPECIAL], 'a', 3),
-        ([CharClass.EMPTY | CharClass.DIGIT | CharClass.SPECIAL], 'a', 7),
-        ([CharClass.ANY ^ CharClass.ALPHA], 'a', 7),  # (Same as above.)
-        ([CharClass.ANY], 'a', 7)
-
-        # ([CharClass.ANY], 'a', 3),
-        # ([CharClass.ANY], 'a', 3),
-        # ([CharClass.ANY], 'a', 3),
-        # ([CharClass.ALPHA], 'b',
-        #  FUZZY_MATCH_PENALTY + 1 + FUZZY_MATCH_MULTIPLIER)
+        ('a', 'a', 0),
+        ('a', 'b', LITERAL_MISMATCH),
+        ('aa', 'ab', LITERAL_MISMATCH),
+        ('aa', 'bb', LITERAL_MISMATCH * 2),
+        (' ', ' ', 0),
+        (' ', 'a', LITERAL_MISMATCH),
+        ('  ', ' a', LITERAL_MISMATCH),
+        ('  ', 'aa', LITERAL_MISMATCH * 2),
+        ('  ', '', LITERAL_MISMATCH * 2),
+        ('', '  ', LENGTH_MISMATCH * 2),
+        ('1', '1', 0),
+        ('1', 'a', LITERAL_MISMATCH),
+        ('1', 'a ', LITERAL_MISMATCH + LENGTH_MISMATCH),
+        ('*', '*', 0),
+        ('*', '1', LITERAL_MISMATCH),
+        ([CharClass.ALPHA], 'a', FUZZY_MATCH),
+        (
+            [CharClass.ALPHA | CharClass.DIGIT], 'a',
+            FUZZY_MATCH + FUZZY_SWING_MISS
+        ),
+        (
+            [CharClass.ALPHA | CharClass.DIGIT | CharClass.SPECIAL], 'a',
+            FUZZY_MATCH + (FUZZY_SWING_MISS * 2)
+        ),
+        (
+            [CharClass.EMPTY | CharClass.DIGIT | CharClass.SPECIAL], 'a',
+            FUZZY_STRIKEOUT
+        ),
+        (
+            [CharClass.ANY ^ CharClass.ALPHA], 'a',
+            FUZZY_STRIKEOUT
+        ),  # (Same as above.)
+        ([CharClass.ANY], 'a', FUZZY_MATCH + (FUZZY_SWING_MISS * 3))
     ])
     def test_graph_distance_score(self, g1, g2, distance):
         """
