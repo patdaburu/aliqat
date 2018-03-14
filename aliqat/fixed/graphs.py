@@ -81,8 +81,7 @@ class _LengthMismatch(object):
 
 class Graph(object):
 
-    #_FUZZY_MATCH_OFFSET = bin(CharClass.ANY).count('1') + 1
-    _ZOOT = -(bin(CharClass.ANY).count('1'))
+    _BIN_FIXER = CharClass.ANY + 1
 
     def __init__(self, s: str):  # TODO: Optional parameter to set minimum size.
         # If the caller actually passed us a list...
@@ -146,76 +145,17 @@ class Graph(object):
                 # Otherwise, we'll encode both values.
                 slf_enc = self._encode(self_graph[i])
                 oth_enc = self._encode(oth)
-                # The comparison will be a bitwise AND between the two
-                # encodings.
-                #cmp = slf_enc & oth_enc
-                # The distance between these two characters is the number of
-                # 'on' bits in CharClass.ANY plus one, minus the number of 'on'
-                # bits in cmp, multiplied by the fuzzy match multiplier.
-
-                # slf_enc_onbits = bin(slf_enc)[self._ZOOT:].count('1')
-                # oth_enc_onbits = bin(oth_enc)[self._ZOOT:].count('1')
-                # match_bits = bin(cmp)[-4:].count('1')
-                # dist = 1 + (slf_enc_onbits - match_bits) * FUZZY_MATCH_MULTIPLIER
-
-                # slf_onbits = bin(slf_enc).count('1')
-                # oth_onbits = bin(oth_enc).count('1')
-                # match_bits = bin(cmp).count('1')
-                # dist = slf_onbits * (oth_onbits - match_bits) + FUZZY_MATCH_PENALTY
-
-                # dist = ((self._FUZZY_MATCH_OFFSET - (bin(cmp).count('1')))
-                #         * FUZZY_MATCH_MULTIPLIER)
-
-                # swings = bin(slf_enc).count('1')
-                # hits = bin(cmp).count('1')
-                # misses = swings - hits
-                # # base penalty + penalty for swinging + penalty for missing with redemption for hitting
-                # dist = FUZZY_MATCH_PENALTY + swings + misses - hits
-
-                # slf_onbits = bin(slf_enc).count('1')
-                # oth_onbits = bin(oth_enc).count('1')
-                # easiness_of_match = (slf_onbits * oth_onbits / 16)
-                # match_bits = bin(cmp).count('1')
-                # max_match_bits = 4
-                # raw_dist = max_match_bits - match_bits
-                # adjusted_dist = raw_dist * easiness_of_match
-                # dist = adjusted_dist
-
-                # slf_enc = 32 | slf_enc
-                # slf_enc_s = bin(slf_enc)
-                # oth_enc = 32 | oth_enc
-                # oth_enc_s = bin(oth_enc)
-                # xor = 32 | (slf_enc ^ oth_enc)
-                # what = bin(xor)
-                # misses = bin(xor).count('1') - 1
-                # dist = 1 # full penalty!
-                # if misses != 0:
-                #     increase = (bin(slf_enc).count('1') - 1)  # we have to give the 32 place bak
-                #     dist += increase
-                # z = 2
-
-                # If we didn't hit at all...
-                # ...do one thing.
-                # If we hit at least once...
-                # ...deduct a portion for each 1 in self_enc
-
-                # shots =  bin(32 | slf_enc).count('1') - 1
-                # targets = bin(32 | oth_enc).count('1') - 1
-                # nd = slf_enc & oth_enc
-                # hits = bin(32 | nd).count('1') - 1
-                # dist = shots + targets - hits
 
                 slf_enc_fixed = 16 | slf_enc
                 oth_enc_fixed = 16 | oth_enc
-                slf_and_oth = slf_enc_fixed & oth_enc_fixed
-                # (below... Give back the 1 in the 16 spot.)
-                shots = bin(slf_enc_fixed).count('1') - 1
-                shots_s = bin(slf_enc_fixed)
-                bottom_s = bin(oth_enc_fixed)
-                # (below... Discount the leading 0 in the string)
-                misses = bin(slf_and_oth).count('0') - 1
-                misses_s = bin(slf_and_oth)
-                dist = misses + (shots * 0.25)
+                result_fixed = slf_enc_fixed & oth_enc_fixed
+                strikeout = (bin(result_fixed).count('1') - 1 == 0)
+                if strikeout:
+                    dist = FUZZY_MATCH_PENALTY * 2
+                else:
+                    swings = bin(slf_enc_fixed).count('1') - 1
+                    hits = bin(result_fixed).count('1') - 1
+                    dist = FUZZY_MATCH_PENALTY + ((swings - hits) * 0.25)
 
 
                 stophere = True
